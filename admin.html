@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة تحكم رواف</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F9F5EB; --cream-2: #FFFCF4; --green: #182B1B; --green-2: #132A1B;
+    --gold: #C9B07A; --gold-2: #B89765; --ink: #1A2E1A; --red: #D92D2D; --ok: #1A7A3A;
+    --line: rgba(0,0,0,.1); --muted: rgba(26,46,26,.6);
+    --gold-grad: linear-gradient(180deg, #D9C49A 0%, #C9B07A 12%, #B89765 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Tajawal", system-ui, sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  [hidden] { display: none !important; }
+  a { color: inherit; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; padding: 10px 16px; font-weight: 800; font-size: 14px; border: 1px solid var(--line); background: #fff; transition: filter .15s, background .15s; white-space: nowrap; text-decoration: none; }
+  .btn:hover { filter: brightness(.97); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-gold { background: var(--gold-grad); border-color: transparent; color: var(--green); box-shadow: 0 4px 12px rgba(201,176,122,.35); }
+  .btn-dark { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-danger { color: var(--red); border-color: rgba(217,45,45,.3); }
+  .btn-sm { padding: 6px 10px; font-size: 12.5px; border-radius: 10px; }
+  .btn-icon { width: 32px; height: 32px; padding: 0; border-radius: 10px; }
+
+  /* Layout */
+  .topbar { background: var(--green); color: #fff; }
+  .topbar .in { max-width: 1100px; margin: auto; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; text-decoration: none; }
+  .topbar .brand img { height: 34px; background: var(--cream); border-radius: 8px; padding: 2px 6px; }
+  .topbar .who { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .topbar .who .btn { background: transparent; color: #fff; border-color: rgba(255,255,255,.25); }
+  .wrap { max-width: 1100px; margin: auto; padding: 20px 16px 120px; }
+  .page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .page-head h1 { font-size: 22px; font-weight: 900; }
+  .card { background: #fff; border: 1px solid rgba(0,0,0,.06); border-radius: 18px; padding: 18px; box-shadow: 0 4px 20px rgba(0,0,0,.03); margin-bottom: 16px; }
+  .card h2 { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+
+  /* Forms */
+  .grid { display: grid; gap: 14px; }
+  .g2 { grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .g2 { grid-template-columns: 1fr 1fr; } }
+  label.l { display: block; font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  label.l .opt { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .in-f { width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 16px; outline: none; transition: border-color .15s, box-shadow .15s; }
+  @media (min-width: 720px) { .in-f { font-size: 14px; } }
+  .in-f:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,176,122,.2); }
+  .in-f.bad { border-color: var(--red); box-shadow: 0 0 0 3px rgba(217,45,45,.1); }
+  .in-f:disabled { background: #F4F0E6; color: rgba(0,0,0,.4); }
+  textarea.in-f { min-height: 110px; resize: vertical; line-height: 1.7; }
+  .ltr { direction: ltr; text-align: right; }
+  .ferr { color: var(--red); font-size: 12px; font-weight: 700; margin-top: 5px; }
+  .ferr:empty { display: none; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 5px; }
+  .alert { background: #FFEDED; color: var(--red); border: 1px solid rgba(217,45,45,.2); border-radius: 12px; padding: 10px 14px; font-weight: 700; font-size: 13px; margin-bottom: 14px; }
+  .alert ul { margin: 6px 20px 0 0; font-weight: 500; }
+
+  /* Switch */
+  .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-weight: 700; }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .switch .track { width: 42px; height: 24px; border-radius: 999px; background: #d6d1c4; position: relative; transition: background .15s; flex: none; }
+  .switch .track::after { content: ""; position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch input:checked + .track { background: var(--ok); }
+  .switch input:checked + .track::after { transform: translateX(-18px); }
+  .switch input:focus-visible + .track { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+  /* Login */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  .login .card { width: 100%; max-width: 400px; padding: 28px; }
+  .login img { height: 70px; margin: 0 auto 14px; display: block; }
+  .login h1 { text-align: center; font-size: 18px; font-weight: 900; margin-bottom: 18px; }
+
+  /* Products table */
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .toolbar .in-f { flex: 1; min-width: 180px; }
+  .toolbar select.in-f { flex: 0 0 auto; width: auto; }
+  .ptable { width: 100%; border-collapse: collapse; }
+  .ptable th { text-align: right; font-size: 12px; color: var(--muted); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .ptable td { padding: 10px; border-bottom: 1px solid rgba(0,0,0,.05); vertical-align: middle; }
+  .ptable .thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: var(--cream); display: block; border: 1px solid var(--line); }
+  .ptable .name { font-weight: 800; }
+  .ptable .pid { font-size: 11px; color: var(--muted); direction: ltr; display: inline-flex; gap: 4px; align-items: center; }
+  .ptable .actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+  .tag.on { background: #E8F5E9; color: var(--ok); }
+  .tag.off { background: #eee; color: #777; }
+  .empty { text-align: center; padding: 40px 10px; color: var(--muted); }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; font-weight: 700; }
+  @media (max-width: 719px) {
+    .ptable thead { display: none; }
+    .ptable, .ptable tbody, .ptable tr, .ptable td { display: block; width: 100%; }
+    .ptable tr { display: grid; grid-template-columns: 56px 1fr; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .ptable td { padding: 0; border: 0; }
+    .ptable td.c-img { grid-row: span 4; }
+    .ptable td.c-actions { grid-column: 1 / -1; margin-top: 6px; }
+    .ptable .actions { justify-content: flex-start; flex-wrap: wrap; }
+    .ptable td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-size: 12px; }
+  }
+
+  /* Images */
+  .imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  .img-card { position: relative; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--cream); }
+  .img-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+  .img-card .cover { position: absolute; top: 8px; right: 8px; background: var(--green); color: var(--gold); font-size: 11px; font-weight: 900; padding: 2px 10px; border-radius: 999px; }
+  .img-card .bar { display: flex; justify-content: space-between; padding: 6px; gap: 4px; background: #fff; }
+  .img-card.loading { display: grid; place-items: center; aspect-ratio: 1; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .drop { border: 2px dashed rgba(184,151,101,.5); border-radius: 14px; aspect-ratio: 1; display: grid; place-items: center; text-align: center; color: var(--gold-2); font-weight: 800; font-size: 13px; cursor: pointer; background: var(--cream-2); padding: 10px; transition: background .15s; }
+  .drop:hover, .drop.over { background: #F3EAD5; }
+  .drop span { display: block; font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+
+  /* Packages */
+  .pkg-row { border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 12px; background: var(--cream-2); }
+  .pkg-row.is-default { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
+  .pkg-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .pkg-head b { font-weight: 900; }
+  .pkg-head .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .pkg-grid { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  @media (min-width: 720px) { .pkg-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+  .pkg-grid .wide { grid-column: 1 / -1; }
+  @media (min-width: 720px) { .pkg-grid .half { grid-column: span 2; } }
+  .radio-def { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 12.5px; cursor: pointer; }
+  .radio-def input { accent-color: var(--green); width: 16px; height: 16px; }
+
+  /* Save bar */
+  .savebar { position: fixed; bottom: 0; inset-inline: 0; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(0,0,0,.06); z-index: 30; }
+  .savebar .in { max-width: 1100px; margin: auto; padding: 12px 16px; display: flex; gap: 10px; justify-content: space-between; align-items: center; }
+  .savebar .state { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+
+  .copy { font-size: 11px; padding: 2px 8px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-weight: 700; }
+  .idbox { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--cream); border-radius: 12px; padding: 10px 12px; font-size: 12.5px; }
+  .idbox code { direction: ltr; font-family: ui-monospace, monospace; background: #fff; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); word-break: break-all; }
+
+  /* Modal + toast */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: grid; place-items: center; z-index: 50; padding: 16px; }
+  .modal .card { width: 100%; max-width: 420px; margin: 0; }
+  .modal .row { display: flex; gap: 10px; justify-content: flex-start; margin-top: 16px; }
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; background: var(--green); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 700; z-index: 60; transition: .2s; max-width: calc(100% - 32px); text-align: center; }
+  .toast.show { opacity: 1; transform: translateX(-50%); }
+  .toast.err { background: var(--red); }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,.15); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-box { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--muted); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ============ Login ============ -->
+<section class="login" id="loginView" hidden>
+  <form class="card" id="loginForm" novalidate>
+    <img src="assets/logo.png" alt="رواف">
+    <h1>تسجيل الدخول للوحة التحكم</h1>
+    <div class="alert" id="loginAlert" hidden></div>
+    <div class="grid">
+      <div>
+        <label class="l" for="lEmail">الإيميل</label>
+        <input class="in-f ltr" id="lEmail" type="email" autocomplete="username" required>
+        <div class="ferr" data-err="email"></div>
+      </div>
+      <div>
+        <label class="l" for="lPass">كلمة السر</label>
+        <input class="in-f ltr" id="lPass" type="password" autocomplete="current-password" required>
+        <div class="ferr" data-err="password"></div>
+      </div>
+      <button class="btn btn-gold" type="submit" id="loginBtn">دخول</button>
+    </div>
+  </form>
+</section>
+
+<!-- ============ App ============ -->
+<div id="appView" hidden>
+  <header class="topbar">
+    <div class="in">
+      <a class="brand" href="#/products"><img src="assets/logo.png" alt="رواف"><span>لوحة التحكم</span></a>
+      <div class="who">
+        <span id="adminName"></span>
+        <button class="btn btn-sm" id="pwBtn" type="button">تغيير كلمة السر</button>
+        <button class="btn btn-sm" id="logoutBtn" type="button">خروج</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Products list -->
+  <main class="wrap" id="listView" hidden>
+    <div class="page-head">
+      <h1>المنتجات</h1>
+      <a class="btn btn-gold" href="#/products/new">+ منتج جديد</a>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <input class="in-f" id="q" type="search" placeholder="بحث بالاسم…">
+        <select class="in-f" id="fActive">
+          <option value="">الكل</option>
+          <option value="true">مفعّل</option>
+          <option value="false">مخفي</option>
+        </select>
+      </div>
+      <div id="listBody"></div>
+      <div class="pager" id="pager" hidden>
+        <button class="btn btn-sm" id="prevPage" type="button">السابق</button>
+        <span id="pageInfo"></span>
+        <button class="btn btn-sm" id="nextPage" type="button">التالي</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Product form -->
+  <main class="wrap" id="editView" hidden>
+    <div class="page-head">
+      <h1 id="editTitle">منتج جديد</h1>
+      <a class="btn" href="#/products">رجوع للمنتجات</a>
+    </div>
+    <div id="editLoading" class="loading-box" hidden><span class="spinner"></span> جاري التحميل…</div>
+
+    <form id="pForm" novalidate hidden>
+      <div class="alert" id="formAlert" hidden></div>
+
+      <div class="card" id="idCard" hidden>
+        <div class="idbox">
+          <span>ID المنتج:</span><code id="pId"></code>
+          <button class="copy" type="button" id="copyId">نسخ</button>
+          <span class="hint" style="margin:0">حطه في <b>PRODUCT_ID</b> جوه config.js عشان الصفحة تعرض المنتج ده.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>البيانات الأساسية</h2>
+        <p class="sub">الاسم والوصف بيظهروا في صفحة الهبوط.</p>
+        <div class="grid g2">
+          <div>
+            <label class="l" for="nameAr">اسم المنتج (عربي)</label>
+            <input class="in-f" id="nameAr" maxlength="150">
+            <div class="ferr" data-err="nameAr"></div>
+          </div>
+          <div>
+            <label class="l" for="nameEn">اسم المنتج (إنجليزي) <span class="opt">اختياري</span></label>
+            <input class="in-f ltr" id="nameEn" maxlength="150">
+            <div class="ferr" data-err="nameEn"></div>
+          </div>
+          <div>
+            <label class="l" for="descriptionAr">الوصف (عربي) <span class="opt">اختياري</span></label>
+            <textarea class="in-f" id="descriptionAr" maxlength="5000"></textarea>
+            <div class="ferr" data-err="descriptionAr"></div>
+          </div>
+          <div>
+            <label class="l" for="descriptionEn">الوصف (إنجليزي) <span class="opt">اختياري</span></label>
+            <textarea class="in-f ltr" id="descriptionEn" maxlength="5000"></textarea>
+            <div class="ferr" data-err="descriptionEn"></div>
+          </div>
+          <div>
+            <label class="l" for="sortOrder">الترتيب <span class="opt">الأصغر يظهر الأول</span></label>
+            <input class="in-f ltr" id="sortOrder" type="number" step="1" value="0">
+            <div class="ferr" data-err="sortOrder"></div>
+          </div>
+          <div style="align-self:end;padding-bottom:10px">
+            <label class="switch"><input type="checkbox" id="isActive" checked><span class="track"></span><span>المنتج ظاهر في الموقع</span></label>
+            <div class="ferr" data-err="isActive"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>الصور</h2>
+        <p class="sub">أول صورة هي الغلاف (الصورة الرئيسية في الصفحة). الصورة التانية للبانر والتالتة لقسم المكونات، ولو مش موجودين بتتكرر صورة الغلاف. لحد 10 صور، JPEG أو PNG أو WebP، وأقصى حجم 5MB.</p>
+        <div class="imgs" id="imgs"></div>
+        <input type="file" id="fileIn" accept="image/jpeg,image/png,image/webp" multiple hidden>
+        <div class="ferr" data-err="images"></div>
+      </div>
+
+      <div class="card">
+        <h2>الباقات والأسعار</h2>
+        <p class="sub">الترتيب هنا هو ترتيب الظهور في الصفحة. لازم باقة واحدة بس تبقى "مختارة افتراضياً". نسبة الخصم بتتحسب لوحدها من السعرين.</p>
+        <div class="alert" id="pkgAlert" hidden></div>
+        <div id="pkgs"></div>
+        <button class="btn" type="button" id="addPkg">+ إضافة باقة</button>
+        <div class="ferr" data-err="packages"></div>
+
+        <div id="priceBox" style="margin-top:16px">
+          <label class="l" for="price">السعر <span class="opt">بيُستخدم بس لو مفيش باقات</span></label>
+          <input class="in-f ltr" id="price" type="number" min="0" step="0.01" style="max-width:220px">
+          <div class="ferr" data-err="price"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>المخزون والعرض</h2>
+        <p class="sub">المخزون مش بيتخصم لوحده (الطلبات بتروح واتساب). عدّله بإيدك بعد كل طلب مؤكد.</p>
+        <div class="grid g2">
+          <div>
+            <label class="l" for="stockQty">المخزون (عدد العبوات) <span class="opt">فاضي = مش بنتابع مخزون</span></label>
+            <input class="in-f ltr" id="stockQty" type="number" min="0" step="1">
+            <div class="hint">الصفحة بتعرض "باقي X عبوات فقط"، والباقة اللي كميتها أكبر من المخزون بتظهر غير متاحة.</div>
+            <div class="ferr" data-err="stockQty"></div>
+          </div>
+          <div></div>
+          <div>
+            <label class="l" for="offerTitle">عنوان العرض <span class="opt">اختياري</span></label>
+            <input class="in-f" id="offerTitle" maxlength="150" placeholder="مثال: عرض اليوم الوطني • خصم 30%">
+            <div class="ferr" data-err="offerTitle"></div>
+          </div>
+          <div>
+            <label class="l" for="offerEndsAt">العرض ينتهي في <span class="opt">بتوقيت جهازك</span></label>
+            <div style="display:flex;gap:8px">
+              <input class="in-f ltr" id="offerEndsAt" type="datetime-local">
+              <button class="btn btn-sm" type="button" id="clearOffer">بدون عرض</button>
+            </div>
+            <div class="hint">الوقت ده هو اللي بيعد عليه العداد في الصفحة. فاضي = مفيش عداد.</div>
+            <div class="ferr" data-err="offerEndsAt"></div>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <div class="savebar" id="saveBar" hidden>
+      <div class="in">
+        <span class="state" id="saveState"></span>
+        <div style="display:flex;gap:8px">
+          <a class="btn" href="#/products">إلغاء</a>
+          <button class="btn btn-gold" type="button" id="saveBtn">حفظ</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============ Password modal ============ -->
+<div class="modal" id="pwModal" hidden>
+  <form class="card" id="pwForm" novalidate>
+    <h2>تغيير كلمة السر</h2>
+    <div class="alert" id="pwAlert" hidden></div>
+    <div class="grid" style="margin-top:12px">
+      <div>
+        <label class="l" for="curPw">كلمة السر الحالية</label>
+        <input class="in-f ltr" id="curPw" type="password" autocomplete="current-password">
+        <div class="ferr" data-err="currentPassword"></div>
+      </div>
+      <div>
+        <label class="l" for="newPw">كلمة السر الجديدة <span class="opt">8 حروف على الأقل</span></label>
+        <input class="in-f ltr" id="newPw" type="password" autocomplete="new-password">
+        <div class="ferr" data-err="newPassword"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn btn-gold" type="submit" id="pwSave">حفظ</button>
+      <button class="btn" type="button" id="pwCancel">إلغاء</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ Confirm modal ============ -->
+<div class="modal" id="confirmModal" hidden>
+  <div class="card">
+    <h2 id="confirmTitle">تأكيد</h2>
+    <p id="confirmText" style="margin-top:8px;line-height:1.8"></p>
+    <div class="row">
+      <button class="btn btn-dark" type="button" id="confirmOk">تأكيد</button>
+      <button class="btn" type="button" id="confirmCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="config.js"></script>
+<script>
+/* ======================= Helpers ======================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = (n) => (n === null || n === undefined ? "—" : `${Number.isInteger(+n) ? +n : (+n).toFixed(2)} ر.س`);
+const API = ((window.RAWAF_CONFIG || {}).API_BASE_URL || "").replace(/\/+$/, "");
+
+function toast(msg, isErr = false) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.toggle("err", isErr);
+  t.classList.add("show");
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+function confirmBox(title, text, okLabel = "تأكيد") {
+  return new Promise((resolve) => {
+    $("#confirmTitle").textContent = title;
+    $("#confirmText").textContent = text;
+    $("#confirmOk").textContent = okLabel;
+    $("#confirmModal").hidden = false;
+    const done = (v) => { $("#confirmModal").hidden = true; $("#confirmOk").onclick = $("#confirmCancel").onclick = null; resolve(v); };
+    $("#confirmOk").onclick = () => done(true);
+    $("#confirmCancel").onclick = () => done(false);
+  });
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("اتنسخ ✅"); }
+  catch (_) { prompt("انسخ الـ ID:", text); }
+}
+
+/* ======================= Auth storage ======================= */
+const TOKEN_KEY = "rawaf_admin_token";
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(TOKEN_KEY)); } catch (_) { return null; } },
+  set(v) { try { localStorage.setItem(TOKEN_KEY, JSON.stringify(v)); } catch (_) {} },
+  clear() { try { localStorage.removeItem(TOKEN_KEY); } catch (_) {} },
+};
+let session = store.get(); // { token, admin }
+
+/* ======================= API client ======================= */
+class ApiError extends Error {
+  constructor(status, err = {}) {
+    super(err.message || "حصل خطأ غير متوقع");
+    this.status = status; this.code = err.code; this.details = err.details || [];
+  }
+}
+
+async function api(method, path, body, { form = false, auth = true } = {}) {
+  if (!API) throw new ApiError(0, { message: "API_BASE_URL مش متحدد في config.js" });
+  const headers = { Accept: "application/json" };
+  if (auth && session?.token) headers.Authorization = `Bearer ${session.token}`;
+  if (body !== undefined && !form) headers["Content-Type"] = "application/json";
+  let res;
+  try {
+    res = await fetch(API + path, { method, headers, body: body === undefined ? undefined : form ? body : JSON.stringify(body) });
+  } catch (_) {
+    throw new ApiError(0, { message: "مش قادر أوصل للسيرفر. اتأكد إن الباك إند شغال وإن العنوان في config.js صح." });
+  }
+  let json = null;
+  try { json = await res.json(); } catch (_) {}
+  if (res.status === 401 && auth) {
+    logout("انتهت الجلسة، سجّل دخول تاني");
+    throw new ApiError(401, { message: "انتهت الجلسة" });
+  }
+  if (!res.ok || !json || json.success === false) {
+    throw new ApiError(res.status, json?.error || { message: res.status === 429 ? "محاولات كتير، استنى شوية وجرب تاني" : `خطأ ${res.status}` });
+  }
+  return json.data;
+}
+
+/* ======================= Field errors ======================= */
+function clearErrors(root) {
+  $$(".ferr", root).forEach((e) => (e.textContent = ""));
+  $$(".in-f.bad", root).forEach((e) => e.classList.remove("bad"));
+  $$(".alert", root).forEach((a) => { if (a.id !== "loginAlert" || root.id === "loginForm") a.hidden = true; });
+}
+// بيوزع error.details على الحقول، واللي مالوش مكان بيظهر في الـ alert
+function showErrors(root, err, alertEl) {
+  const leftovers = [];
+  (err.details || []).forEach((d) => {
+    const slot = $(`.ferr[data-err="${CSS.escape(d.field)}"]`, root);
+    if (slot) {
+      slot.textContent = d.message;
+      const input = document.getElementById(d.field) || [...slot.parentElement.children].find((c) => c.classList.contains("in-f"));
+      if (input) input.classList.add("bad");
+    } else leftovers.push(d);
+  });
+  if (alertEl) {
+    const hasDetails = (err.details || []).length > 0;
+    alertEl.innerHTML = esc(hasDetails ? "راجع الحقول المعلّمة بالأحمر" : err.message) +
+      (leftovers.length ? `<ul>${leftovers.map((d) => `<li>${esc(d.field)}: ${esc(d.message)}</li>`).join("")}</ul>` : "");
+    alertEl.hidden = false;
+  }
+  const first = $(".in-f.bad", root) || alertEl;
+  if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/* ======================= Login / logout ======================= */
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = e.currentTarget;
+  clearErrors(f);
+  $("#loginAlert").hidden = true;
+  const btn = $("#loginBtn");
+  btn.disabled = true; btn.textContent = "جاري الدخول…";
+  try {
+    const data = await api("POST", "/auth/login", { email: $("#lEmail").value.trim(), password: $("#lPass").value }, { auth: false });
+    session = { token: data.accessToken, admin: data.admin };
+    store.set(session);
+    $("#lPass").value = "";
+    boot();
+  } catch (err) {
+    showErrors(f, err, $("#loginAlert"));
+  } finally {
+    btn.disabled = false; btn.textContent = "دخول";
+  }
+});
+
+function logout(msg) {
+  session = null;
+  store.clear();
+  showLogin();
+  if (msg) { $("#loginAlert").textContent = msg; $("#loginAlert").hidden = false; }
+}
+$("#logoutBtn").addEventListener("click", () => logout());
+
+function showLogin() {
+  $("#appView").hidden = true;
+  $("#loginView").hidden = false;
+  $("#lEmail").focus();
+}
+
+async function boot() {
+  if (!session?.token) return showLogin();
+  try {
+    const me = await api("GET", "/auth/me");
+    session.admin = me; store.set(session);
+  } catch (err) {
+    if (err.status === 401) return;
+    if (err.status === 0) { showLogin(); $("#loginAlert").textContent = err.message; $("#loginAlert").hidden = false; return; }
+  }
+  $("#adminName").textContent = session.admin?.name || session.admin?.email || "";
+  $("#loginView").hidden = true;
+  $("#appView").hidden = false;
+  route();
+}
+
+/* ======================= Password ======================= */
+$("#pwBtn").addEventListener("click", () => {
+  clearErrors($("#pwForm")); $("#pwAlert").hidden = true;
+  $("#curPw").value = $("#newPw").value = "";
+  $("#pwModal").hidden = false; $("#curPw").focus();
+});
+$("#pwCancel").addEventListener("click", () => ($("#pwModal").hidden = true));
+$("#pwForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = e.currentTarget;
+  clearErrors(f); $("#pwAlert").hidden = true;
+  if ($("#newPw").value.length < 8) {
+    return showErrors(f, { details: [{ field: "newPassword", message: "لازم 8 حروف على الأقل" }] }, null);
+  }
+  $("#pwSave").disabled = true;
+  try {
+    await api("PATCH", "/auth/password", { currentPassword: $("#curPw").value, newPassword: $("#newPw").value });
+    $("#pwModal").hidden = true;
+    toast("كلمة السر اتغيرت ✅");
+  } catch (err) {
+    if (err.status !== 401) showErrors(f, err, $("#pwAlert"));
+  } finally { $("#pwSave").disabled = false; }
+});
+
+/* ======================= Router ======================= */
+window.addEventListener("hashchange", () => { if (session?.token) route(); });
+function route() {
+  const h = location.hash || "#/products";
+  const m = h.match(/^#\/products\/(.+)$/);
+  $("#listView").hidden = !!m;
+  $("#editView").hidden = !m;
+  if (m) openEditor(m[1] === "new" ? null : decodeURIComponent(m[1]));
+  else loadList();
+}
+
+/* ======================= Products list ======================= */
+const listState = { page: 1, limit: 20, q: "", isActive: "" };
+let qTimer;
+$("#q").addEventListener("input", (e) => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => { listState.q = e.target.value.trim(); listState.page = 1; loadList(); }, 350);
+});
+$("#fActive").addEventListener("change", (e) => { listState.isActive = e.target.value; listState.page = 1; loadList(); });
+$("#prevPage").addEventListener("click", () => { listState.page--; loadList(); });
+$("#nextPage").addEventListener("click", () => { listState.page++; loadList(); });
+
+async function loadList() {
+  const body = $("#listBody");
+  body.innerHTML = `<div class="loading-box"><span class="spinner"></span> جاري التحميل…</div>`;
+  const qs = new URLSearchParams({ page: listState.page, limit: listState.limit, sort: "sortOrder" });
+  if (listState.q) qs.set("q", listState.q);
+  if (listState.isActive) qs.set("isActive", listState.isActive);
+  try {
+    const data = await api("GET", `/admin/products?${qs}`);
+    renderList(data.items || [], data.pagination || {});
+  } catch (err) {
+    if (err.status === 401) return;
+    body.innerHTML = `<div class="empty">${esc(err.message)}<br><br><button class="btn btn-sm" type="button" onclick="loadList()">حاول تاني</button></div>`;
+    $("#pager").hidden = true;
+  }
+}
+
+function renderList(items, pg) {
+  const body = $("#listBody");
+  if (!items.length) {
+    body.innerHTML = `<div class="empty">${listState.q || listState.isActive ? "مفيش منتجات مطابقة للبحث" : "مفيش منتجات لسه"}</div>`;
+    $("#pager").hidden = true;
+    return;
+  }
+  body.innerHTML = `<table class="ptable">
+    <thead><tr><th></th><th>المنتج</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th></th></tr></thead>
+    <tbody>${items.map((p) => `
+      <tr data-id="${esc(p.id)}">
+        <td class="c-img">${p.imageUrl ? `<img class="thumb" src="${esc(p.imageUrl)}" alt="">` : `<span class="thumb"></span>`}</td>
+        <td><div class="name">${esc(p.nameAr)}</div><span class="pid">${esc(p.id)} <button class="copy" type="button" data-act="copy">نسخ</button></span></td>
+        <td data-l="السعر">${money(p.price)}${p.packages?.length ? ` <span class="hint">(${p.packages.length} باقات)</span>` : ""}</td>
+        <td data-l="المخزون">${p.stockQty === null || p.stockQty === undefined ? "—" : p.stockQty}</td>
+        <td><label class="switch" title="إظهار/إخفاء"><input type="checkbox" data-act="toggle" ${p.isActive ? "checked" : ""}><span class="track"></span><span class="tag ${p.isActive ? "on" : "off"}">${p.isActive ? "ظاهر" : "مخفي"}</span></label></td>
+        <td class="c-actions"><div class="actions">
+          <a class="btn btn-sm" href="#/products/${encodeURIComponent(p.id)}">تعديل</a>
+          <button class="btn btn-sm btn-danger" type="button" data-act="delete">حذف</button>
+        </div></td>
+      </tr>`).join("")}</tbody></table>`;
+  body._items = items;
+  const pages = pg.totalPages || 1;
+  $("#pager").hidden = pages <= 1;
+  $("#pageInfo").textContent = `صفحة ${pg.page || 1} من ${pages}`;
+  $("#prevPage").disabled = (pg.page || 1) <= 1;
+  $("#nextPage").disabled = (pg.page || 1) >= pages;
+}
+
+$("#listBody").addEventListener("click", async (e) => {
+  const act = e.target.closest("[data-act]")?.dataset.act;
+  if (!act || act === "toggle") return;
+  const tr = e.target.closest("tr");
+  const p = ($("#listBody")._items || []).find((x) => x.id === tr.dataset.id);
+  if (!p) return;
+  if (act === "copy") return copyText(p.id);
+  if (act === "delete") {
+    const ok = await confirmBox("حذف المنتج", `متأكد إنك عايز تحذف "${p.nameAr}" نهائياً؟ لو عايز تخفيه مؤقتاً استخدم زرار الإظهار/الإخفاء بدل الحذف.`, "حذف نهائي");
+    if (!ok) return;
+    try { await api("DELETE", `/admin/products/${encodeURIComponent(p.id)}`); toast("اتحذف ✅"); loadList(); }
+    catch (err) { if (err.status !== 401) toast(err.message, true); }
+  }
+});
+$("#listBody").addEventListener("change", async (e) => {
+  if (e.target.dataset.act !== "toggle") return;
+  const cb = e.target;
+  const id = cb.closest("tr").dataset.id;
+  cb.disabled = true;
+  try {
+    const p = await api("PATCH", `/admin/products/${encodeURIComponent(id)}`, { isActive: cb.checked });
+    const tag = cb.parentElement.querySelector(".tag");
+    tag.className = `tag ${p.isActive ? "on" : "off"}`; tag.textContent = p.isActive ? "ظاهر" : "مخفي";
+    toast(p.isActive ? "المنتج ظاهر ✅" : "المنتج اتخفى");
+  } catch (err) {
+    cb.checked = !cb.checked;
+    if (err.status !== 401) toast(err.message, true);
+  } finally { cb.disabled = false; }
+});
+
+/* ======================= Product editor ======================= */
+let editing = null;      // المنتج الأصلي (أو null لمنتج جديد)
+let images = [];         // [url]
+let packages = [];       // [{id?, label, quantity, price, compareAtPrice, badgeText, badgeStyle, giftText, isDefault}]
+let snapshot = null;     // الـ payload وقت الفتح — عشان PATCH يبعت اللي اتغير بس
+let uploading = 0;
+
+async function openEditor(id) {
+  const f = $("#pForm");
+  clearErrors(f);
+  f.hidden = true; $("#saveBar").hidden = true;
+  $("#editTitle").textContent = id ? "تعديل منتج" : "منتج جديد";
+  $("#idCard").hidden = !id;
+  editing = null;
+  if (id) {
+    $("#editLoading").hidden = false;
+    try { editing = await api("GET", `/admin/products/${encodeURIComponent(id)}`); }
+    catch (err) {
+      $("#editLoading").hidden = true;
+      if (err.status === 401) return;
+      toast(err.status === 404 ? "المنتج مش موجود" : err.message, true);
+      location.hash = "#/products";
+      return;
+    }
+    $("#editLoading").hidden = true;
+  }
+  fillForm(editing);
+  snapshot = buildPayload();
+  f.hidden = false; $("#saveBar").hidden = false;
+  updateSaveState();
+}
+
+function toLocalInput(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+function fillForm(p) {
+  p = p || {};
+  $("#pId").textContent = p.id || "";
+  $("#nameAr").value = p.nameAr || "";
+  $("#nameEn").value = p.nameEn || "";
+  $("#descriptionAr").value = p.descriptionAr || "";
+  $("#descriptionEn").value = p.descriptionEn || "";
+  $("#sortOrder").value = p.sortOrder ?? 0;
+  $("#isActive").checked = p.isActive ?? true;
+  $("#price").value = p.price ?? "";
+  $("#stockQty").value = p.stockQty ?? "";
+  $("#offerTitle").value = p.offerTitle || "";
+  $("#offerEndsAt").value = toLocalInput(p.offerEndsAt);
+  images = Array.isArray(p.images) ? [...p.images] : [];
+  packages = (p.packages || []).map(({ id, label, quantity, price, compareAtPrice, badgeText, badgeStyle, giftText, isDefault }) =>
+    ({ id, label, quantity, price, compareAtPrice, badgeText, badgeStyle, giftText, isDefault }));
+  renderImages();
+  renderPackages();
+}
+
+const numOrNull = (v, int = false) => {
+  v = String(v).trim();
+  if (v === "") return null;
+  const n = Number(v);
+  if (isNaN(n)) return v; // نسيب الباك إند يرجّع رسالة الخطأ
+  return int && Number.isInteger(n) ? n : n;
+};
+const strOrNull = (v) => { v = String(v ?? "").trim(); return v === "" ? null : v; };
+
+function buildPayload() {
+  const pk = packages.map((r) => {
+    const o = {
+      label: String(r.label ?? "").trim(),
+      quantity: numOrNull(r.quantity, true),
+      price: numOrNull(r.price),
+      compareAtPrice: numOrNull(r.compareAtPrice ?? ""),
+      badgeText: strOrNull(r.badgeText),
+      badgeStyle: strOrNull(r.badgeText) ? (r.badgeStyle || "gold") : null,
+      giftText: strOrNull(r.giftText),
+      isDefault: !!r.isDefault,
+    };
+    if (r.id) o.id = r.id;
+    return o;
+  });
+  const endLocal = $("#offerEndsAt").value;
+  const payload = {
+    nameAr: $("#nameAr").value.trim(),
+    nameEn: strOrNull($("#nameEn").value),
+    descriptionAr: strOrNull($("#descriptionAr").value),
+    descriptionEn: strOrNull($("#descriptionEn").value),
+    images: [...images],
+    isActive: $("#isActive").checked,
+    sortOrder: numOrNull($("#sortOrder").value, true) ?? 0,
+    packages: pk,
+    stockQty: numOrNull($("#stockQty").value, true),
+    offerTitle: strOrNull($("#offerTitle").value),
+    offerEndsAt: endLocal ? new Date(endLocal).toISOString() : null,
+  };
+  if (!pk.length) payload.price = numOrNull($("#price").value);
+  return payload;
+}
+
+function changedFields() {
+  const now = buildPayload();
+  if (!editing) {
+    // إنشاء: نبعت كل حاجة غير الـ null (الحقول الاختيارية)
+    return Object.fromEntries(Object.entries(now).filter(([, v]) => v !== null));
+  }
+  const diff = {};
+  for (const k of new Set([...Object.keys(now), ...Object.keys(snapshot)])) {
+    if (!(k in now)) continue;
+    if (JSON.stringify(now[k]) !== JSON.stringify(snapshot[k])) diff[k] = now[k];
+  }
+  return diff;
+}
+
+function updateSaveState() {
+  if (!snapshot) return;
+  const n = Object.keys(editing ? changedFields() : {}).length;
+  $("#saveState").textContent = uploading ? `جاري رفع ${uploading} صورة…` : editing ? (n ? `${n} تعديل مش محفوظ` : "مفيش تعديلات") : "منتج جديد";
+  $("#saveBtn").disabled = uploading > 0;
+}
+$("#pForm").addEventListener("input", updateSaveState);
+$("#pForm").addEventListener("change", updateSaveState);
+
+$("#copyId").addEventListener("click", () => copyText($("#pId").textContent));
+$("#clearOffer").addEventListener("click", () => { $("#offerEndsAt").value = ""; $("#offerTitle").value = ""; updateSaveState(); });
+
+/* ---------- Images ---------- */
+const MAX_IMAGES = 10, MAX_SIZE = 5 * 1024 * 1024, TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function renderImages() {
+  const box = $("#imgs");
+  box.innerHTML = images.map((url, i) => `
+    <div class="img-card">
+      <img src="${esc(url)}" alt="">
+      ${i === 0 ? `<span class="cover">الغلاف</span>` : ""}
+      <div class="bar">
+        <button class="btn btn-icon btn-sm" type="button" data-img="prev" data-i="${i}" ${i === 0 ? "disabled" : ""} title="قدّم">→</button>
+        <button class="btn btn-icon btn-sm btn-danger" type="button" data-img="del" data-i="${i}" title="حذف">✕</button>
+        <button class="btn btn-icon btn-sm" type="button" data-img="next" data-i="${i}" ${i === images.length - 1 ? "disabled" : ""} title="أخّر">←</button>
+      </div>
+    </div>`).join("") +
+    Array.from({ length: uploading }, () => `<div class="img-card loading"><span><span class="spinner"></span><br>جاري الرفع…</span></div>`).join("") +
+    (images.length + uploading < MAX_IMAGES ? `<div class="drop" id="dropZone" tabindex="0" role="button">+ إضافة صور<span>اسحب الصور هنا أو دوس</span></div>` : "");
+}
+
+$("#imgs").addEventListener("click", (e) => {
+  if (e.target.closest("#dropZone")) return $("#fileIn").click();
+  const b = e.target.closest("[data-img]");
+  if (!b) return;
+  const i = +b.dataset.i;
+  if (b.dataset.img === "del") images.splice(i, 1);
+  if (b.dataset.img === "prev" && i > 0) [images[i - 1], images[i]] = [images[i], images[i - 1]];
+  if (b.dataset.img === "next" && i < images.length - 1) [images[i + 1], images[i]] = [images[i], images[i + 1]];
+  renderImages(); updateSaveState();
+});
+$("#imgs").addEventListener("keydown", (e) => { if (e.target.id === "dropZone" && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); $("#fileIn").click(); } });
+$("#imgs").addEventListener("dragover", (e) => { if (e.target.closest("#dropZone")) { e.preventDefault(); e.target.closest("#dropZone").classList.add("over"); } });
+$("#imgs").addEventListener("dragleave", (e) => { const z = e.target.closest("#dropZone"); if (z) z.classList.remove("over"); });
+$("#imgs").addEventListener("drop", (e) => { if (!e.target.closest("#dropZone")) return; e.preventDefault(); uploadFiles([...e.dataTransfer.files]); });
+$("#fileIn").addEventListener("change", (e) => { uploadFiles([...e.target.files]); e.target.value = ""; });
+
+async function uploadFiles(files) {
+  const room = MAX_IMAGES - images.length - uploading;
+  const bad = files.filter((f) => !TYPES.includes(f.type) || f.size > MAX_SIZE);
+  if (bad.length) toast(`اتجاهلت ${bad.length} صورة: لازم JPEG أو PNG أو WebP وأقل من 5MB`, true);
+  let ok = files.filter((f) => !bad.includes(f));
+  if (ok.length > room) { toast(`الحد الأقصى ${MAX_IMAGES} صور`, true); ok = ok.slice(0, room); }
+  for (const file of ok) {
+    uploading++; renderImages(); updateSaveState();
+    try {
+      const fd = new FormData();
+      fd.append("image", file); // من غير Content-Type، المتصفح بيحطه
+      const data = await api("POST", "/admin/uploads/image", fd, { form: true });
+      images.push(data.url);
+    } catch (err) {
+      if (err.status !== 401) toast(`فشل رفع ${file.name}: ${err.details?.[0]?.message || err.message}`, true);
+    } finally {
+      uploading--; renderImages(); updateSaveState();
+    }
+  }
+}
+
+/* ---------- Packages ---------- */
+function renderPackages() {
+  const box = $("#pkgs");
+  $("#priceBox").hidden = packages.length > 0;
+  if (!packages.length) { box.innerHTML = `<div class="hint" style="margin-bottom:12px">مفيش باقات. المنتج هيتعرض بالسعر اللي تحت.</div>`; return; }
+  box.innerHTML = packages.map((p, i) => {
+    const disc = p.compareAtPrice && p.price && +p.compareAtPrice > +p.price ? Math.round((p.compareAtPrice - p.price) / p.compareAtPrice * 100) : null;
+    return `
+    <div class="pkg-row${p.isDefault ? " is-default" : ""}" data-i="${i}">
+      <div class="pkg-head">
+        <b>باقة ${i + 1}${disc ? ` <span class="tag on">خصم ${disc}%</span>` : ""}</b>
+        <div class="tools">
+          <label class="radio-def"><input type="radio" name="defPkg" data-f="isDefault" ${p.isDefault ? "checked" : ""}> مختارة افتراضياً</label>
+          <button class="btn btn-icon btn-sm" type="button" data-pk="up" ${i === 0 ? "disabled" : ""} title="لفوق">↑</button>
+          <button class="btn btn-icon btn-sm" type="button" data-pk="down" ${i === packages.length - 1 ? "disabled" : ""} title="لتحت">↓</button>
+          <button class="btn btn-icon btn-sm btn-danger" type="button" data-pk="del" title="حذف">✕</button>
+        </div>
+      </div>
+      <div class="pkg-grid">
+        <div><label class="l">الاسم</label><input class="in-f" data-f="label" value="${esc(p.label)}" maxlength="100" placeholder="مثال: 3 عبوات"><div class="ferr" data-err="packages.${i}.label"></div></div>
+        <div><label class="l">عدد العبوات</label><input class="in-f ltr" data-f="quantity" type="number" min="1" step="1" value="${esc(p.quantity ?? "")}"><div class="ferr" data-err="packages.${i}.quantity"></div></div>
+        <div><label class="l">السعر</label><input class="in-f ltr" data-f="price" type="number" min="0" step="0.01" value="${esc(p.price ?? "")}"><div class="ferr" data-err="packages.${i}.price"></div></div>
+        <div><label class="l">السعر قبل الخصم <span class="opt">اختياري</span></label><input class="in-f ltr" data-f="compareAtPrice" type="number" min="0" step="0.01" value="${esc(p.compareAtPrice ?? "")}"><div class="ferr" data-err="packages.${i}.compareAtPrice"></div></div>
+        <div class="half"><label class="l">الشارة <span class="opt">اختياري</span></label><input class="in-f" data-f="badgeText" value="${esc(p.badgeText ?? "")}" maxlength="50" placeholder="مثال: الأكثر مبيعاً"><div class="ferr" data-err="packages.${i}.badgeText"></div></div>
+        <div class="half"><label class="l">لون الشارة</label><select class="in-f" data-f="badgeStyle" ${p.badgeText ? "" : "disabled"}>
+          <option value="gold" ${p.badgeStyle !== "red" ? "selected" : ""}>ذهبي</option>
+          <option value="red" ${p.badgeStyle === "red" ? "selected" : ""}>أحمر</option>
+        </select><div class="ferr" data-err="packages.${i}.badgeStyle"></div></div>
+        <div class="wide"><label class="l">الهدية / المميزات <span class="opt">اختياري</span></label><input class="in-f" data-f="giftText" value="${esc(p.giftText ?? "")}" maxlength="200" placeholder="مثال: شحن مجاني + هدية"><div class="ferr" data-err="packages.${i}.giftText"></div></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+$("#pkgs").addEventListener("input", (e) => {
+  const row = e.target.closest(".pkg-row"); const f = e.target.dataset.f;
+  if (!row || !f || f === "isDefault") return;
+  const p = packages[+row.dataset.i];
+  p[f] = e.target.value;
+  if (f === "badgeText") row.querySelector('[data-f="badgeStyle"]').disabled = !e.target.value.trim();
+  if (f === "price" || f === "compareAtPrice") {
+    const disc = p.compareAtPrice && p.price && +p.compareAtPrice > +p.price ? Math.round((p.compareAtPrice - p.price) / p.compareAtPrice * 100) : null;
+    row.querySelector(".pkg-head b").innerHTML = `باقة ${+row.dataset.i + 1}${disc ? ` <span class="tag on">خصم ${disc}%</span>` : ""}`;
+  }
+});
+$("#pkgs").addEventListener("change", (e) => {
+  const row = e.target.closest(".pkg-row"); if (!row) return;
+  const i = +row.dataset.i;
+  if (e.target.dataset.f === "isDefault") { packages.forEach((p, j) => (p.isDefault = j === i)); renderPackages(); }
+  if (e.target.dataset.f === "badgeStyle") packages[i].badgeStyle = e.target.value;
+  updateSaveState();
+});
+$("#pkgs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-pk]"); if (!b) return;
+  const i = +b.closest(".pkg-row").dataset.i;
+  if (b.dataset.pk === "del") {
+    const wasDef = packages[i].isDefault;
+    packages.splice(i, 1);
+    if (wasDef && packages.length) packages[0].isDefault = true;
+  }
+  if (b.dataset.pk === "up" && i > 0) [packages[i - 1], packages[i]] = [packages[i], packages[i - 1]];
+  if (b.dataset.pk === "down" && i < packages.length - 1) [packages[i + 1], packages[i]] = [packages[i], packages[i + 1]];
+  renderPackages(); updateSaveState();
+});
+$("#addPkg").addEventListener("click", () => {
+  if (packages.length >= 10) return toast("الحد الأقصى 10 باقات", true);
+  packages.push({ label: "", quantity: packages.length + 1, price: "", compareAtPrice: "", badgeText: "", badgeStyle: "gold", giftText: "", isDefault: packages.length === 0 });
+  renderPackages(); updateSaveState();
+  $$(".pkg-row").at(-1).querySelector('[data-f="label"]').focus();
+});
+
+/* ---------- Save ---------- */
+$("#saveBtn").addEventListener("click", async () => {
+  const f = $("#pForm");
+  clearErrors(f);
+  const body = changedFields();
+  if (editing && !Object.keys(body).length) return toast("مفيش تعديلات تتحفظ");
+  if (!$("#nameAr").value.trim()) {
+    return showErrors(f, { details: [{ field: "nameAr", message: "اسم المنتج مطلوب" }] }, null);
+  }
+  const btn = $("#saveBtn");
+  btn.disabled = true; btn.textContent = "جاري الحفظ…";
+  try {
+    const saved = editing
+      ? await api("PATCH", `/admin/products/${encodeURIComponent(editing.id)}`, body)
+      : await api("POST", "/admin/products", body);
+    toast("اتحفظ ✅");
+    if (!editing) { location.hash = `#/products/${encodeURIComponent(saved.id)}`; return; }
+    editing = saved;
+    fillForm(saved);
+    snapshot = buildPayload();
+    updateSaveState();
+  } catch (err) {
+    if (err.status === 401) return;
+    showErrors(f, err, $("#formAlert"));
+  } finally {
+    btn.disabled = uploading > 0; btn.textContent = "حفظ";
+  }
+});
+
+window.addEventListener("beforeunload", (e) => {
+  if (!$("#editView").hidden && editing && Object.keys(changedFields()).length) { e.preventDefault(); e.returnValue = ""; }
+});
+
+boot();
+</script>
+</body>
+</html>
